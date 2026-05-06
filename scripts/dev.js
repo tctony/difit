@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { spawn } from 'child_process';
 
+import open, { apps } from 'open';
+
 import { getCompileCloseExitCode } from '../dev/dev-lifecycle.js';
 import { createCliStdoutProxy } from '../dev/dev-stdout.js';
 
@@ -20,12 +22,29 @@ const cliStdoutProxy = createCliStdoutProxy({
     }
 
     console.log('🚀 Starting Vite dev server...');
-    viteProcess = spawn('pnpm', ['exec', 'vite', '--open', '--clearScreen=false'], {
-      stdio: 'inherit',
+    viteProcess = spawn('pnpm', ['exec', 'vite', '--clearScreen=false'], {
+      stdio: ['inherit', 'pipe', 'inherit'],
       env: {
         ...process.env,
         VITE_DIFIT_API_URL: cliServerUrl,
       },
+    });
+
+    let browserOpened = false;
+    viteProcess.stdout.on('data', (data) => {
+      process.stdout.write(data);
+      if (!browserOpened && data.toString().includes('Local:')) {
+        browserOpened = true;
+        const url = 'http://localhost:5173/';
+        const openPromise =
+          process.platform === 'darwin'
+            ? open(url, {
+                newInstance: true,
+                app: { name: apps.chrome, arguments: ['--new-window'] },
+              })
+            : open(url);
+        openPromise.catch(() => {});
+      }
     });
   },
   onOutput: (output) => {
