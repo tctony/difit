@@ -5,7 +5,7 @@ import { join, dirname, isAbsolute, resolve, sep } from 'path';
 import { fileURLToPath } from 'url';
 
 import express, { type Express } from 'express';
-import open from 'open';
+import open, { apps } from 'open';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -950,7 +950,14 @@ export async function startServer(
     // Don't open browser if no differences found
   } else if (options.openBrowser) {
     try {
-      await open(url);
+      if (process.platform === 'darwin') {
+        await open(url, {
+          newInstance: true,
+          app: { name: apps.chrome, arguments: ['--new-window'] },
+        });
+      } else {
+        await open(url);
+      }
     } catch {
       console.warn('Failed to open browser automatically');
     }
