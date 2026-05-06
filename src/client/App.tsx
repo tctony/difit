@@ -23,6 +23,7 @@ import {
 import { Checkbox } from './components/Checkbox';
 import { CommentsDropdown } from './components/CommentsDropdown';
 import { CommentsListModal } from './components/CommentsListModal';
+import { FinishReviewModal } from './components/FinishReviewModal';
 import { DiffQuickMenu } from './components/DiffQuickMenu';
 import { DiffViewer } from './components/DiffViewer';
 import { FileList } from './components/FileList';
@@ -109,6 +110,7 @@ function App() {
   const [showSparkles, setShowSparkles] = useState(false);
   const [hasTriggeredSparkles, setHasTriggeredSparkles] = useState(false);
   const [isCommentsListOpen, setIsCommentsListOpen] = useState(false);
+  const [isFinishReviewOpen, setIsFinishReviewOpen] = useState(false);
   const [isRevisionModalOpen, setIsRevisionModalOpen] = useState(false);
   const [collapsedFiles, setCollapsedFiles] = useState<Set<string>>(new Set());
   const collapsedInitializedRef = useRef(false);
@@ -486,6 +488,9 @@ function App() {
     },
     onShowCommentsList: () => {
       setIsCommentsListOpen(true);
+    },
+    onFinishReview: () => {
+      setIsFinishReviewOpen(true);
     },
     onRefresh: () => {
       reload();
@@ -878,6 +883,28 @@ function App() {
     }
   };
 
+  const handleFinishReview = async (summary: string) => {
+    try {
+      const commentsPrompt = generateAllCommentsPrompt();
+      const clipboardContent = commentsPrompt ? `${summary}\n\n${commentsPrompt}` : summary;
+      await copyTextToClipboard(clipboardContent);
+    } catch (error) {
+      console.error('Failed to copy review to clipboard:', error);
+    }
+
+    try {
+      await fetch('/api/finish-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ summary }),
+      });
+    } catch {
+      // Best-effort; server may already be shutting down
+    }
+
+    window.close();
+  };
+
   const handleReplyToThread = useCallback(
     (threadId: string, body: string): Promise<void> => {
       replyToThread({ threadId, body });
@@ -1090,6 +1117,28 @@ function App() {
                 isMobile ? 'gap-3' : 'gap-4'
               }`}
             >
+              {!isMobile && (
+                <button
+                  onClick={() => setIsFinishReviewOpen(true)}
+                  className="text-xs px-3 py-1.5 rounded transition-all flex items-center gap-1.5 whitespace-nowrap font-medium"
+                  style={{
+                    backgroundColor: 'var(--color-yellow-btn-bg)',
+                    color: 'var(--color-yellow-btn-text)',
+                    border: '1px solid var(--color-yellow-btn-border)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--color-yellow-btn-hover-bg)';
+                    e.currentTarget.style.borderColor = 'var(--color-yellow-btn-hover-border)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--color-yellow-btn-bg)';
+                    e.currentTarget.style.borderColor = 'var(--color-yellow-btn-border)';
+                  }}
+                  title="Finish review and copy summary to clipboard"
+                >
+                  Finish Review
+                </button>
+              )}
               {!isMobile && threads.length > 0 && (
                 <CommentsDropdown
                   commentsCount={threads.length}
@@ -1358,6 +1407,13 @@ function App() {
         )}
 
         <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+
+        <FinishReviewModal
+          isOpen={isFinishReviewOpen}
+          onClose={() => setIsFinishReviewOpen(false)}
+          onConfirm={handleFinishReview}
+          hasComments={threads.length > 0}
+        />
 
         <CommentsListModal
           isOpen={isCommentsListOpen}

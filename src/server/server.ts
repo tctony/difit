@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { execFile, spawn } from 'child_process';
 import { createHash } from 'crypto';
 import { type Server } from 'http';
 import { join, dirname, isAbsolute, resolve, sep } from 'path';
@@ -9,8 +9,34 @@ import open, { apps } from 'open';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+function getFrontmostApp(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      'osascript',
+      [
+        '-e',
+        'tell application "System Events" to get name of first process whose frontmost is true',
+      ],
+      (err, stdout) => {
+        if (err) return reject(err);
+        resolve(stdout.trim());
+      },
+    );
+  });
+}
+
+function activateApp(appName: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    execFile('osascript', ['-e', `tell application "${appName}" to activate`], (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+}
+
 import { type DiffMode } from '../types/watch.js';
-import { formatCommentsOutput } from '../utils/commentFormatting.js';
+import { formatAllCommentThreadsPrompt, formatCommentsOutput } from '../utils/commentFormatting.js';
 import {
   mergeCommentImports,
   normalizeCommentImports,
@@ -876,12 +902,36 @@ export async function startServer(
     res.json({ success: true });
   });
 
+  let reviewSummary: string | null = null;
+
+  app.post('/api/finish-review', express.json(), (req, res) => {
+    const { summary } = req.body as { summary?: string };
+    if (typeof summary === 'string') {
+      reviewSummary = summary;
+    }
+    res.json({ success: true });
+  });
+
   // Function to output comments when server shuts down
   function outputFinalComments() {
     const session = getOrCreateCommentSession(currentCommentSelection);
-    if (session.threads.length > 0) {
-      console.log(formatCommentsOutput(session.threads.map(toCommentThread)));
+    const hasComments = session.threads.length > 0;
+    const summary = reviewSummary ?? (hasComments ? '根据以下评论意见进行修改' : 'ok');
+
+    const parts: string[] = ['\n📝 Review Result:'];
+    parts.push('='.repeat(50));
+    parts.push(summary);
+
+    if (hasComments) {
+      parts.push('');
+      parts.push(`Code comments (${session.threads.length}):`);
+      parts.push('-'.repeat(50));
+      const allPrompts = formatAllCommentThreadsPrompt(session.threads.map(toCommentThread));
+      parts.push(allPrompts);
     }
+
+    parts.push('='.repeat(50));
+    console.log(parts.join('\n'));
   }
 
   // SSE endpoint for file watching
@@ -932,6 +982,15 @@ export async function startServer(
           await fileWatcher.stop();
 
           outputFinalComments();
+
+          if (previousApp) {
+            try {
+              await activateApp(previousApp);
+            } catch {
+              // Best-effort focus restore
+            }
+          }
+
           process.exit(0);
         }, 100);
       }
@@ -986,6 +1045,16 @@ export async function startServer(
     } catch (error) {
       console.warn('⚠️  File watcher failed to start:', error);
       console.warn('   Continuing without file watching...');
+    }
+  }
+
+  // Capture the frontmost app so we can restore focus after review
+  let previousApp: string | null = null;
+  if (process.platform === 'darwin') {
+    try {
+      previousApp = await getFrontmostApp();
+    } catch {
+      // Ignore — focus restore is best-effort
     }
   }
 

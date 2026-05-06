@@ -33,6 +33,7 @@ export function useKeyboardNavigation({
   onCopyAllComments,
   onDeleteAllComments,
   onShowCommentsList,
+  onFinishReview,
   onRefresh,
 }: UseKeyboardNavigationProps): UseKeyboardNavigationReturn {
   const [cursor, setCursor] = useState<CursorPosition | null>(null);
@@ -494,6 +495,18 @@ export function useKeyboardNavigation({
     },
     hotkeyOptions,
     [onShowCommentsList],
+  );
+
+  // Finish review
+  useHotkeys(
+    'shift+v',
+    () => {
+      if (onFinishReview) {
+        onFinishReview();
+      }
+    },
+    hotkeyOptions,
+    [onFinishReview],
   );
 
   return {
