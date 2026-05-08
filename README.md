@@ -6,6 +6,28 @@
   English | <a href="./README.ja.md">日本語</a> | <a href="./README.zh.md">简体中文</a> | <a href="./README.ko.md">한국어</a>
 </p>
 
+> [!NOTE]
+> **This is a fork of [yoshiko-pg/difit](https://github.com/yoshiko-pg/difit)** published as
+> [`@tctony/difit`](https://www.npmjs.com/package/@tctony/difit) on npm. All credit for the
+> original tool goes to [@yoshiko-pg](https://github.com/yoshiko-pg).
+>
+> Changes in this fork:
+>
+> - **Finish Review flow** — a persistent "Finish Review" button (and `Shift+V` shortcut) opens a
+>   modal asking for an overall comment, copies the summary plus inline comments to the
+>   clipboard, and prints them as a single Review Result on shutdown. Default summary is `ok`
+>   when there are no comments, otherwise `根据以下评论意见进行修改`.
+> - **Browser opens in a new window on the current Space (macOS)** — uses
+>   `open -n -a Chrome --args --new-window` so the review page no longer steals you to the
+>   Space where Chrome already lives, and focus is restored to the launching app on shutdown.
+> - **Server-persisted appearance settings** — settings now live in
+>   `~/.config/difit/config.json` (honoring `XDG_CONFIG_HOME`) instead of being trapped in
+>   per-port `localStorage`, so editor / theme / etc. survive across runs even when the dev
+>   server picks a new port.
+> - **Custom-command editor preset** — the editor configuration was restructured so you can
+>   plug in any external editor by configuring its command and argument template (with a
+>   migration for old `localStorage` shapes).
+
 ![difit screenshot](docs/images/screenshot.png)
 
 **difit** is a CLI tool that lets you view and review local git diffs with a GitHub-style viewer. In addition to clean visuals, comments can be copied as prompts for AI. The local code review tool for the AI era!
@@ -15,13 +37,13 @@
 Try it first
 
 ```bash
-npx difit  # View the latest commit diff in WebUI
+npx @tctony/difit  # View the latest commit diff in WebUI
 ```
 
 Install and use
 
 ```bash
-npm install -g difit
+npm install -g @tctony/difit
 difit  # View the latest commit diff in WebUI
 ```
 

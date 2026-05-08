@@ -2,7 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+> **This is the changelog for the [`@tctony/difit`](https://www.npmjs.com/package/@tctony/difit)
+> fork.** It diverged from upstream [`difit`](https://github.com/yoshiko-pg/difit) at v4.0.5
+> (entries below this banner are inherited from upstream and kept for reference).
+> Fork-specific changes start at the **Fork** section below; the fork uses its own version
+> series prefixed with `-fork.<n>` to avoid clashing with upstream releases.
+
 ## [Unreleased]
+
+## Fork
+
+### [4.0.5-fork.0]
+
+First release of the fork. All upstream `4.0.5` features plus:
+
+- **Finish Review flow** — persistent "Finish Review" button (and `Shift+V` shortcut) opens a
+  modal asking for an overall comment, copies the summary plus inline comments to the
+  clipboard, and prints them as a single Review Result on shutdown. Default summary is `ok`
+  when there are no inline comments, otherwise `根据以下评论意见进行修改`.
+- **macOS browser opens in a new window on the current Space** — uses
+  `open -n -a "Google Chrome" --args --new-window` so the review page no longer steals you
+  to the Space where Chrome already lives. Also restores focus to the launching app on
+  shutdown via `osascript`.
+- **Server-persisted appearance settings** — settings now live in
+  `~/.config/difit/config.json` (honoring `XDG_CONFIG_HOME`) instead of being trapped in
+  per-port `localStorage`. Editor / theme / etc. survive across runs even when the dev
+  server picks a different port. localStorage is still updated as a cache to avoid theme
+  flash on first paint.
+- **Custom-command editor preset** — the editor configuration was restructured so any
+  external editor can be plugged in via a configurable command and argument template,
+  with a migration for the legacy `localStorage` shape.
+
+## Upstream
 
 ## [4.0.5] - 2026-04-29
 

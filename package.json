@@ -1,7 +1,7 @@
 {
-  "name": "difit",
-  "version": "4.0.5",
-  "description": "A lightweight command-line tool that spins up a local web server to display Git commit diffs in a GitHub-like Files changed view",
+  "name": "@tctony/difit",
+  "version": "4.0.5-fork.0",
+  "description": "Fork of difit (yoshiko-pg/difit): a lightweight CLI that spins up a local web server to display Git commit diffs in a GitHub-like Files changed view",
   "keywords": [
     "cli",
     "code-review",
@@ -13,15 +13,18 @@
     "review",
     "tailwind"
   ],
-  "homepage": "https://github.com/yoshiko-pg/difit",
+  "homepage": "https://github.com/tctony/difit",
   "bugs": {
-    "url": "https://github.com/yoshiko-pg/difit/issues"
+    "url": "https://github.com/tctony/difit/issues"
   },
   "license": "MIT",
-  "author": "yoshiko-pg",
+  "author": "tctony",
+  "contributors": [
+    "yoshiko-pg (original author of difit)"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yoshiko-pg/difit.git"
+    "url": "https://github.com/tctony/difit.git"
   },
   "bin": {
     "difit": "./dist/cli/index.js"
