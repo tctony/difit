@@ -36,6 +36,13 @@ export const mockFetch = (response: any, revisionsResponse?: any) => {
           },
       });
     }
+    // Handle /api/settings endpoint (no-op in tests)
+    if (url.includes('/api/settings')) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ settings: null }),
+      });
+    }
     // Default: /api/diff and others
     return Promise.resolve({
       ok: true,

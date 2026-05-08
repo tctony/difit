@@ -53,6 +53,7 @@ import { getFileExtension } from '../utils/fileUtils.js';
 
 import { FileWatcherService } from './file-watcher.js';
 import { GitDiffParser } from './git-diff.js';
+import { patchUserConfig, readUserConfig } from './user-config.js';
 
 import {
   type BaseMode,
@@ -900,6 +901,32 @@ export async function startServer(
     }
 
     res.json({ success: true });
+  });
+
+  app.get('/api/settings', async (_req, res) => {
+    try {
+      const config = await readUserConfig();
+      const settings = (config.appearanceSettings ?? null) as unknown;
+      res.json({ settings });
+    } catch (error) {
+      console.warn('Failed to read user config:', error);
+      res.status(500).json({ error: 'Failed to read settings' });
+    }
+  });
+
+  app.put('/api/settings', express.json({ limit: '64kb' }), async (req, res) => {
+    const body = req.body as { settings?: unknown };
+    if (!body || typeof body.settings !== 'object' || body.settings === null) {
+      res.status(400).json({ error: 'Invalid settings payload' });
+      return;
+    }
+    try {
+      await patchUserConfig({ appearanceSettings: body.settings });
+      res.json({ success: true });
+    } catch (error) {
+      console.warn('Failed to write user config:', error);
+      res.status(500).json({ error: 'Failed to save settings' });
+    }
   });
 
   let reviewSummary: string | null = null;

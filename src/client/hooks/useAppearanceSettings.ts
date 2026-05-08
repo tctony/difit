@@ -69,28 +69,88 @@ const normalizeEditorSettings = (raw: unknown): AppearanceSettings['editor'] => 
   return DEFAULT_SETTINGS.editor;
 };
 
-export function useAppearanceSettings() {
-  const [settings, setSettings] = useState<AppearanceSettings>(() => {
-    try {
-      const stored = localStorage.getItem(APPEARANCE_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as Partial<AppearanceSettings> & {
-          autoViewedPatterns?: unknown;
-          editor?: unknown;
-        };
+function normalizeSettings(raw: unknown): AppearanceSettings | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const parsed = raw as Partial<AppearanceSettings> & {
+    autoViewedPatterns?: unknown;
+    editor?: unknown;
+  };
+  return {
+    ...DEFAULT_SETTINGS,
+    ...parsed,
+    editor: normalizeEditorSettings(parsed.editor),
+    autoViewedPatterns: normalizeAutoViewedPatterns(parsed.autoViewedPatterns),
+  };
+}
 
-        return {
-          ...DEFAULT_SETTINGS,
-          ...parsed,
-          editor: normalizeEditorSettings(parsed.editor),
-          autoViewedPatterns: normalizeAutoViewedPatterns(parsed.autoViewedPatterns),
-        };
+function loadLocalSettings(): AppearanceSettings | null {
+  try {
+    const stored = localStorage.getItem(APPEARANCE_STORAGE_KEY);
+    if (!stored) return null;
+    return normalizeSettings(JSON.parse(stored));
+  } catch (error) {
+    console.warn('Failed to load appearance settings from localStorage:', error);
+    return null;
+  }
+}
+
+function persistLocal(settings: AppearanceSettings) {
+  try {
+    localStorage.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify(settings));
+  } catch (error) {
+    console.warn('Failed to save appearance settings to localStorage:', error);
+  }
+}
+
+async function persistServer(settings: AppearanceSettings): Promise<void> {
+  try {
+    await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ settings }),
+    });
+  } catch (error) {
+    console.warn('Failed to save appearance settings to server:', error);
+  }
+}
+
+export function useAppearanceSettings() {
+  const [settings, setSettings] = useState<AppearanceSettings>(
+    () => loadLocalSettings() ?? DEFAULT_SETTINGS,
+  );
+
+  // Hydrate from server on mount; migrate localStorage to server if server is empty.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch('/api/settings');
+        if (!response.ok) return;
+        const payload = (await response.json()) as { settings?: unknown };
+        const serverSettings = normalizeSettings(payload.settings);
+
+        if (cancelled) return;
+
+        if (serverSettings) {
+          setSettings(serverSettings);
+          persistLocal(serverSettings);
+        } else {
+          // Server has no config yet — migrate the local one if we have it.
+          const local = loadLocalSettings();
+          if (local) {
+            void persistServer(local);
+          }
+        }
+      } catch (error) {
+        // Server unavailable — keep using local settings.
+        console.warn('Failed to load appearance settings from server:', error);
       }
-    } catch (error) {
-      console.warn('Failed to load appearance settings from localStorage:', error);
-    }
-    return DEFAULT_SETTINGS;
-  });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const applyTheme = useCallback(
     (theme: 'light' | 'dark', colorVision: ColorVisionMode = 'normal') => {
@@ -100,11 +160,8 @@ export function useAppearanceSettings() {
   );
 
   const saveSettings = useCallback((newSettings: AppearanceSettings) => {
-    try {
-      localStorage.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify(newSettings));
-    } catch (error) {
-      console.warn('Failed to save appearance settings to localStorage:', error);
-    }
+    persistLocal(newSettings);
+    void persistServer(newSettings);
   }, []);
 
   const getSettingsForResolvedTheme = useCallback(
