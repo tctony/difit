@@ -12,9 +12,11 @@ All notable changes to this project will be documented in this file.
 
 ## Fork
 
-### [4.0.5-fork.0]
+### [4.0.5]
 
-First release of the fork. All upstream `4.0.5` features plus:
+First stable release of the fork (promoted from `4.0.5-fork.0`; identical
+runtime code, only fork tooling/docs changed). All upstream `4.0.5`
+features plus:
 
 - **Finish Review flow** — persistent "Finish Review" button (and `Shift+V` shortcut) opens a
   modal asking for an overall comment, copies the summary plus inline comments to the
