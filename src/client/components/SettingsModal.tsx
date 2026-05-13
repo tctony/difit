@@ -32,6 +32,7 @@ interface AppearanceSettings {
   editor: EditorSettings;
   colorVision: ColorVisionMode;
   autoViewedPatterns: string[];
+  includeUntracked: boolean;
 }
 
 interface SettingsModalProps {
@@ -56,6 +57,7 @@ const DEFAULT_SETTINGS: AppearanceSettings = {
   },
   colorVision: 'normal',
   autoViewedPatterns: [],
+  includeUntracked: true,
 };
 
 const FONT_FAMILIES = [
@@ -168,6 +170,7 @@ export function SettingsModal({ isOpen, onClose, settings, onSettingsChange }: S
       ...settings,
       editor: { ...DEFAULT_SETTINGS.editor },
       autoViewedPatterns: DEFAULT_SETTINGS.autoViewedPatterns,
+      includeUntracked: DEFAULT_SETTINGS.includeUntracked,
     });
     setAutoViewedPatternsInput(formatAutoViewedPatterns(DEFAULT_SETTINGS.autoViewedPatterns));
   };
@@ -459,6 +462,28 @@ export function SettingsModal({ isOpen, onClose, settings, onSettingsChange }: S
                         </div>
                       );
                     })()}
+                </div>
+
+                <div>
+                  <label className="flex items-center justify-between cursor-pointer">
+                    <div>
+                      <span className="text-sm font-medium text-github-text-primary">
+                        Include Untracked Files
+                      </span>
+                      <p className="text-xs text-github-text-secondary mt-0.5">
+                        Automatically include untracked files in working directory diffs without
+                        prompting.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={settings.includeUntracked ?? true}
+                      onChange={(e) =>
+                        onSettingsChange({ ...settings, includeUntracked: e.target.checked })
+                      }
+                      className="w-4 h-4 accent-github-accent ml-4 shrink-0"
+                    />
+                  </label>
                 </div>
 
                 <div>

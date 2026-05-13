@@ -7,6 +7,7 @@ import { simpleGit, type SimpleGit } from 'simple-git';
 
 import pkg from '../../package.json' with { type: 'json' };
 import { startServer } from '../server/server.js';
+import { readUserConfig } from '../server/user-config.js';
 import { type CommentImport, type DiffSelection, type DiffViewMode } from '../types/diff.js';
 import { createDiffSelection } from '../utils/diffSelection.js';
 import { DiffMode } from '../types/watch.js';
@@ -369,10 +370,15 @@ program
 
       if (selection.targetCommitish === 'working' || selection.targetCommitish === '.') {
         const git = simpleGit(repoPath);
-        if (isBackgroundChild && !options.includeUntracked) {
+        const userConfig = await readUserConfig();
+        const appearance = userConfig.appearanceSettings as Record<string, unknown> | undefined;
+        const configIncludeUntracked =
+          (appearance?.includeUntracked ?? userConfig.includeUntracked) !== false;
+        const effectiveIncludeUntracked = options.includeUntracked || configIncludeUntracked;
+        if (isBackgroundChild && !effectiveIncludeUntracked) {
           // Skip interactive prompts in detached background mode.
         } else {
-          await handleUntrackedFiles(git, options.includeUntracked);
+          await handleUntrackedFiles(git, effectiveIncludeUntracked);
         }
       }
 

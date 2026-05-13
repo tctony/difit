@@ -29,6 +29,7 @@ const DEFAULT_SETTINGS: AppearanceSettings = {
   },
   colorVision: 'normal',
   autoViewedPatterns: [],
+  includeUntracked: true,
 };
 
 /**

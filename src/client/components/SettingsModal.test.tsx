@@ -30,6 +30,7 @@ const baseSettings = {
   },
   colorVision: 'normal' as const,
   autoViewedPatterns: [],
+  includeUntracked: true,
 };
 
 describe('SettingsModal', () => {
