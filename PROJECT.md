@@ -35,7 +35,7 @@ This fork is published to npm as [`@tctony/difit`](https://www.npmjs.com/package
 Versioning rules:
 
 - Stable releases use plain SemVer like `4.0.6` and publish to the `latest` npm dist-tag.
-- Pre-release / fork-specific iterations use the `-fork.<n>` suffix (e.g. `4.0.6-fork.1`) and publish to the `next` dist-tag automatically. Other recognized prerelease suffixes: `-alpha.<n>`, `-beta.<n>`, `-rc.<n>`, `-next.<n>`.
+- Pre-release / fork-specific iterations use the `-pre.<n>` suffix (e.g. `4.0.6-pre.0`) and publish to the `next` dist-tag automatically. Other recognized prerelease suffixes: `-alpha.<n>`, `-beta.<n>`, `-rc.<n>`, `-next.<n>`.
 - The CHANGELOG keeps a `## Fork` section that lists every fork release; upstream history sits below `## Upstream` for reference.
 
 When the user asks an agent to release this fork, follow the steps below in order. Stop and ask only the questions the user has not already answered.
@@ -44,9 +44,9 @@ When the user asks an agent to release this fork, follow the steps below in orde
 2. **Bump the version number.** A release always changes the version (npm rejects duplicates), so the only decision is the bump level — never ask for or accept an explicit version string.
    - Read the current version from `package.json` (`node -p "require('./package.json').version"`).
    - If the user already said `patch` / `minor` / `major`, use it. Otherwise ask which of the three to bump (default: `patch`).
-   - Compute the next version with semver rules. When the current version carries a `-fork.<n>` suffix:
-     - `patch` → increment the `<n>` counter while keeping the same `MAJOR.MINOR.PATCH` (e.g. `4.0.5-fork.0` → `4.0.5-fork.1`).
-     - `minor` / `major` → bump the corresponding base segment, reset the lower ones to zero, and start a fresh `-fork.0` (e.g. `4.0.5-fork.3` + `minor` → `4.1.0-fork.0`).
+   - Compute the next version with semver rules. When the current version carries a `-pre.<n>` suffix:
+     - `patch` → increment the `<n>` counter while keeping the same `MAJOR.MINOR.PATCH` (e.g. `4.0.6-pre.0` → `4.0.6-pre.1`).
+     - `minor` / `major` → bump the corresponding base segment, reset the lower ones to zero, and start a fresh `-pre.0` (e.g. `4.0.6-pre.3` + `minor` → `4.1.0-pre.0`).
    - When the current version is a plain stable release, fall back to standard semver: `4.0.5` + `patch` → `4.0.6`, etc. Stable bumps stay stable.
 3. **Update files in this exact order.**
    1. Edit `package.json` `version` to the resolved value.
@@ -65,7 +65,7 @@ When the user asks an agent to release this fork, follow the steps below in orde
    git push origin v<version>
    ```
 7. **Watch the workflow** finish on GitHub Actions. After it succeeds, verify the package page (`https://www.npmjs.com/package/@tctony/difit`) shows the new version with the right dist-tag.
-8. **(Optional) Cut a GitHub Release** from the tag, copying the new CHANGELOG section as the body. Mark it as a pre-release when the version contains a `-fork.<n>` (or other prerelease) suffix.
+8. **(Optional) Cut a GitHub Release** from the tag, copying the new CHANGELOG section as the body. Mark it as a pre-release when the version contains a `-pre.<n>` (or other prerelease) suffix.
 
 Hard rules for the agent:
 

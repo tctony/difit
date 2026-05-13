@@ -64,7 +64,7 @@ jobs:
           else
             PKG_VERSION=$(node -p "require('./package.json').version")
             case "$PKG_VERSION" in
-              *-fork.*|*-alpha.*|*-beta.*|*-rc.*|*-next.*)
+              *-pre.*|*-fork.*|*-alpha.*|*-beta.*|*-rc.*|*-next.*)
                 echo "value=next" >> "$GITHUB_OUTPUT" ;;
               *)
                 echo "value=latest" >> "$GITHUB_OUTPUT" ;;
