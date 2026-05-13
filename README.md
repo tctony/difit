@@ -11,22 +11,7 @@
 > [`@tctony/difit`](https://www.npmjs.com/package/@tctony/difit) on npm. All credit for the
 > original tool goes to [@yoshiko-pg](https://github.com/yoshiko-pg).
 >
-> Changes in this fork:
->
-> - **Finish Review flow** — a persistent "Finish Review" button (and `Shift+V` shortcut) opens a
->   modal asking for an overall comment, copies the summary plus inline comments to the
->   clipboard, and prints them as a single Review Result on shutdown. Default summary is `ok`
->   when there are no comments, otherwise `根据以下评论意见进行修改`.
-> - **Browser opens in a new window on the current Space (macOS)** — uses
->   `open -n -a Chrome --args --new-window` so the review page no longer steals you to the
->   Space where Chrome already lives, and focus is restored to the launching app on shutdown.
-> - **Server-persisted appearance settings** — settings now live in
->   `~/.config/difit/config.json` (honoring `XDG_CONFIG_HOME`) instead of being trapped in
->   per-port `localStorage`, so editor / theme / etc. survive across runs even when the dev
->   server picks a new port.
-> - **Custom-command editor preset** — the editor configuration was restructured so you can
->   plug in any external editor by configuring its command and argument template (with a
->   migration for old `localStorage` shapes).
+> See [CHANGELOG.md](./CHANGELOG.md) for fork-specific changes.
 
 ![difit screenshot](docs/images/screenshot.png)
 

@@ -50,7 +50,7 @@ When the user asks an agent to release this fork, follow the steps below in orde
    - When the current version is a plain stable release, fall back to standard semver: `4.0.5` + `patch` → `4.0.6`, etc. Stable bumps stay stable.
 3. **Update files in this exact order.**
    1. Edit `package.json` `version` to the resolved value.
-   2. Edit `CHANGELOG.md`: under `## Fork`, insert a new `### [<version>]` block above the previous one summarising the changes since the last fork release (group by Added / Changed / Fixed when it helps). The section content is the source of truth for the release notes — keep it concise.
+   2. Edit `CHANGELOG.md`: under `## Fork`, insert a new `### [<version>] - YYYY-MM-DD` block (with today's date) above the previous one summarising the changes since the last fork release (group by Added / Changed / Fixed when it helps). The section content is the source of truth for the release notes — keep it concise.
    3. Run `pnpm run check` and `pnpm test` to confirm nothing is broken.
 4. **Commit and tag.** Stage exactly the two changed files, commit as `chore(release): v<version>`, then tag the commit with `v<version>` (note the leading `v`).
    ```bash
