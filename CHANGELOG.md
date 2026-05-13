@@ -12,6 +12,12 @@ All notable changes to this project will be documented in this file.
 
 ## Fork
 
+### [4.0.6-pre.0]
+
+- **Include Untracked Files setting** — new `includeUntracked` option (defaults to `true`)
+  that auto-includes untracked files in working-directory diffs without prompting. Configurable
+  via Settings > System toggle in the web UI, or by editing `~/.config/difit/config.json`.
+
 ### [4.0.5]
 
 First stable release of the fork (promoted from `4.0.5-fork.0`; identical
