@@ -12,6 +12,11 @@ All notable changes to this project will be documented in this file.
 
 ## Fork
 
+### [4.0.6-pre.1] - 2026-05-13
+
+- **Close browser on Ctrl+C** — when the server receives SIGINT, it sends a shutdown event
+  via the heartbeat SSE connection so the browser tab closes automatically.
+
 ### [4.0.6-pre.0] - 2026-05-13
 
 - **Include Untracked Files setting** — new `includeUntracked` option (defaults to `true`)
