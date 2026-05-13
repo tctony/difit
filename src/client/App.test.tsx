@@ -103,6 +103,7 @@ class MockEventSource {
   onopen: (() => void) | null = null;
   onerror: ((err: any) => void) | null = null;
   close = vi.fn();
+  addEventListener = vi.fn();
 
   constructor(url: string) {
     this.url = url;

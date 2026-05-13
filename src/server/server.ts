@@ -4,7 +4,7 @@ import { type Server } from 'http';
 import { join, dirname, isAbsolute, resolve, sep } from 'path';
 import { fileURLToPath } from 'url';
 
-import express, { type Express } from 'express';
+import express, { type Express, type Response } from 'express';
 import open, { apps } from 'open';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -162,6 +162,7 @@ export async function startServer(
       : undefined;
   const parser = new GitDiffParser(repositoryPath);
   const fileWatcher = new FileWatcherService();
+  const heartbeatClients = new Set<Response>();
   const generatedStatusCache = new Map<
     string,
     { value: GeneratedStatusResponse; expiresAt: number }
@@ -988,6 +989,7 @@ export async function startServer(
 
     // Send initial heartbeat
     res.write('data: connected\n\n');
+    heartbeatClients.add(res);
 
     // Send heartbeat every 5 seconds
     const heartbeatInterval = setInterval(() => {
@@ -996,6 +998,7 @@ export async function startServer(
 
     // When client disconnects (tab closed, navigation, etc.)
     req.on('close', () => {
+      heartbeatClients.delete(res);
       clearInterval(heartbeatInterval);
       if (options.keepAlive) {
         console.log('Client disconnected, but server is staying alive (--keep-alive)');
@@ -1022,6 +1025,20 @@ export async function startServer(
         }, 100);
       }
     });
+  });
+
+  // Notify connected browser tabs to close (called from CLI on SIGINT)
+  app.post('/api/shutdown', (_req, res) => {
+    for (const client of heartbeatClients) {
+      try {
+        client.write('event: shutdown\ndata: bye\n\n');
+        client.end();
+      } catch {
+        // Client may already be disconnected
+      }
+    }
+    heartbeatClients.clear();
+    res.json({ success: true });
   });
 
   // Always runs in production mode when distributed as a CLI tool

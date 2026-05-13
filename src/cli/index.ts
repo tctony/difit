@@ -464,8 +464,18 @@ program
         console.log('💡 Use --open to automatically open browser\n');
       }
 
+      let shuttingDown = false;
       process.on('SIGINT', async () => {
+        if (shuttingDown) return;
+        shuttingDown = true;
         console.log('\n👋 Shutting down difit server...');
+
+        // Notify browser tabs to close
+        try {
+          await fetch(`http://localhost:${port}/api/shutdown`, { method: 'POST' });
+        } catch {
+          // Server may already be down
+        }
 
         // Try to fetch comments before shutting down
         try {

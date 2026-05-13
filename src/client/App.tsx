@@ -841,6 +841,11 @@ function App() {
       eventSource.close();
     };
 
+    eventSource.addEventListener('shutdown', () => {
+      eventSource.close();
+      window.close();
+    });
+
     // Cleanup on unmount
     return () => {
       eventSource.close();
